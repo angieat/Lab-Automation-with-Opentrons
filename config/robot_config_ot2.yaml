@@ -1,0 +1,118 @@
+# OT-2 Robot Configuration
+# Used by: bac_distribution2.py | PCR_Prep_OT2.py | SerialDilutionV3.py | MediaDistribution_26.py
+# Update robot.ip to match your machine (check the OT-2 touchscreen or Opentrons App)
+
+robot:
+  type: OT-2
+  ip: "169.254.68.68"       # USB default — replace with your Wi-Fi IP if connecting over network
+  port: 31950
+  api_level: "2.24"
+
+# ── Pipettes ────────────────────────────────────────────────────────────────
+# Mount positions are fixed per protocol — do not swap without updating protocol code
+
+pipettes:
+  right:
+    name: p300_multi_gen2       # SerialDilutionV3, MediaDistribution
+    alt_name: p20_single_gen2   # PCR_Prep_OT2 (right mount uses P20 for small volumes)
+  left:
+    name: p1000_single_gen2     # All OT-2 protocols use P1000 on left mount
+    alt_name: p300_single_gen2  # bac_distribution uses P300 single on right; P1000 on left
+
+# Note: bac_distribution2.py is the exception — it uses P300 single (right) + P1000 single (left)
+# All other OT-2 protocols use P20 or P300 multi (right) + P1000 single (left)
+
+# ── Flow Rates (µL/s) ───────────────────────────────────────────────────────
+# These are set inside each protocol. Listed here for reference and SOP documentation.
+
+flow_rates:
+  p20_single_gen2:
+    aspirate: 20
+    dispense: 20
+    blow_out: 100
+  p300_multi_gen2:
+    aspirate: 46              # ~50% of OT-2 default (92 µL/s) — reduces splashing
+    dispense: 46
+    blow_out: 50
+  p300_single_gen2:
+    aspirate: 46
+    dispense: 46
+    blow_out: 50
+  p1000_single_gen2:
+    aspirate: 46              # Reduced from default 274 µL/s for viscous media
+    dispense: 46
+    blow_out: 50
+    # bac_distribution uses higher defaults — see P1000_ASPIRATE_RATE constant in that file
+
+# ── Tip Racks ────────────────────────────────────────────────────────────────
+
+tip_racks:
+  ot2_300ul:
+    load_name: opentrons_96_tiprack_300ul
+    used_by: [bac_distribution2, SerialDilutionV3, MediaDistribution]
+  ot2_300ul_filter:
+    load_name: opentrons_96_filtertiprack_300ul
+  ot2_20ul_filter:
+    load_name: opentrons_96_filtertiprack_20ul
+    used_by: [PCR_Prep_OT2]
+  ot2_1000ul_filter:
+    load_name: opentrons_96_filtertiprack_1000ul
+    used_by: [PCR_Prep_OT2]
+  ot2_1000ul:
+    load_name: opentrons_96_tiprack_1000ul
+    used_by: [SerialDilutionV3, MediaDistribution]
+
+# ── Deck Layouts ──────────────────────────────────────────────────────────────
+# Slot numbers for OT-2 (1–11 grid, 12 = fixed trash)
+
+deck_layouts:
+
+  bac_distribution2:
+    "1": bacteria_source_rack         # runtime param: src_rack
+    "2": sample_labware_1             # runtime param: sam1
+    "3": sample_labware_2             # runtime param: sam2
+    "4": opentrons_96_tiprack_300ul
+    "5": media_reservoir              # runtime param: media
+    "6": sample_labware_3             # runtime param: sam3 (optional)
+    "7": opentrons_96_tiprack_300ul
+    "8": opentrons_96_filtertiprack_1000ul
+    "9": opentrons_96_filtertiprack_1000ul
+    "10": opentrons_96_tiprack_300ul
+    "11": opentrons_96_filtertiprack_1000ul
+    "12": fixed_trash
+
+  pcr_prep_ot2:
+    "1": water_reservoir              # runtime param: water
+    "2": reagent_source               # runtime param: src (master mix, primers, plasmids)
+    "3": final_assembly_plate         # runtime param: fnl
+    "7": opentrons_96_filtertiprack_20ul
+    "8": opentrons_96_filtertiprack_1000ul
+    "10": opentrons_96_filtertiprack_20ul
+    "11": opentrons_96_filtertiprack_1000ul
+    "12": fixed_trash
+
+  serial_dilution_v3:
+    "1": reagent_source               # runtime param: src (stock compounds)
+    "2": final_plate_1                # runtime param: fnl
+    "3": final_plate_2
+    "5": diluent_reservoir            # runtime param: dilutant_src
+    "6": final_plate_3
+    "7": opentrons_96_tiprack_300ul
+    "8": opentrons_96_tiprack_1000ul
+    "9": final_plate_4
+    "10": opentrons_96_tiprack_300ul
+    "11": opentrons_96_tiprack_1000ul
+    "12": fixed_trash
+
+  media_distribution:
+    "1": media_reservoir_1            # runtime param: res_type
+    "2": culture_plate_1              # runtime param: fnl_type
+    "3": culture_plate_2
+    "4": media_reservoir_2            # second media (if res_num = 2)
+    "5": culture_plate_3
+    "6": culture_plate_4
+    "7": opentrons_96_tiprack_300ul
+    "8": opentrons_96_tiprack_1000ul
+    "10": opentrons_96_tiprack_300ul
+    "11": opentrons_96_tiprack_1000ul
+    "12": fixed_trash

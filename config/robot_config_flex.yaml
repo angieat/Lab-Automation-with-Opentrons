@@ -1,0 +1,129 @@
+# Flex Robot Configuration
+# Used by: PCR_Prep_FLEX.py | PCR_LrgPrep_FLEX.py | IVTT_OAID_V3.py | MediaMatrixV2.py
+# Update robot.ip to your Flex's hostname or IP (shown on the touchscreen under Settings → Network)
+
+robot:
+  type: Flex
+  ip: "192.168.1.xx"         # Replace with your Flex's IP or mDNS hostname (e.g. "flex-1.local")
+  port: 31950
+  api_level: "2.24"           # PCR_LrgPrep_FLEX uses 2.25 — noted per-protocol below
+
+# ── Pipettes ────────────────────────────────────────────────────────────────
+# All Flex protocols in this repo use a single P50 single-channel on the left mount
+
+pipettes:
+  left:
+    name: flex_1channel_50
+    mount: left
+  right:
+    name: null                # No right-mount pipette used in current Flex protocols
+
+# ── Flow Rates (µL/s) ───────────────────────────────────────────────────────
+# Flex P50 flow rates — set inside each protocol. Listed here for SOP reference.
+
+flow_rates:
+  flex_1channel_50:
+    pcr_prep_flex:
+      aspirate: 20
+      dispense: 20
+      blow_out: 100
+    pcr_lrg_prep_flex:
+      aspirate: 20
+      dispense: 20
+      blow_out: 100
+    ivtt_oaid:
+      aspirate: 5             # Deliberately slow — PURExpress components are sensitive
+      dispense: 10
+      blow_out: 100
+    media_matrix:
+      aspirate: default       # MediaMatrixV2 does not override flow rates
+
+# ── Tip Racks ────────────────────────────────────────────────────────────────
+
+tip_racks:
+  flex_50ul:
+    load_name: opentrons_flex_96_tiprack_50ul
+    used_by: [PCR_Prep_FLEX, PCR_LrgPrep_FLEX, IVTT_OAID_V3, MediaMatrixV2]
+
+# ── Deck Layouts ──────────────────────────────────────────────────────────────
+# Flex deck uses a 4×3 letter-number grid: rows A–D (front to back), columns 1–3 (left to right)
+# A3 is reserved for the trash bin in all Flex protocols
+
+deck_layouts:
+
+  pcr_prep_flex:
+    api_level: "2.24"
+    D1: water_reservoir               # runtime param: water (150 mL or 300 mL)
+    D2: reagent_source                # runtime param: src (master mix, primers)
+    D3: final_assembly_plate          # runtime param: fnl
+    C1: opentrons_flex_96_tiprack_50ul
+    C2: opentrons_flex_96_tiprack_50ul
+    A3: trash_bin
+
+  pcr_lrg_prep_flex:
+    api_level: "2.25"                 # This protocol requires API 2.25 — ensure firmware is current
+    D1: water_reservoir               # runtime param: water
+    D2: reagent_source                # runtime param: src (master mix, primers)
+    D3: final_assembly_plate          # runtime param: fnl
+    C3: dna_source                    # runtime param: dna (A1 = pos control, A2+ = experimental)
+    C1: opentrons_flex_96_tiprack_50ul
+    C2: opentrons_flex_96_tiprack_50ul
+    B1: opentrons_flex_96_tiprack_50ul
+    B2: opentrons_flex_96_tiprack_50ul
+    A1: opentrons_flex_96_tiprack_50ul
+    A2: opentrons_flex_96_tiprack_50ul
+    A3: trash_bin
+    # 6 tip racks = 576 tips; covers up to 94 experimental samples + both controls
+
+  ivtt_oaid_v3:
+    api_level: "2.24"
+    D1: reagent_source                # runtime param: src (Sol A rows 0-1, add-ins rows 2-5)
+    D2: plasmid_plate                 # runtime param: plsmd (A1 = pos ctrl, A2+ = experimental)
+    D3: final_assembly_plate          # runtime param: fnl
+    C2: water_reservoir               # runtime param: water (well A1 used)
+    A1: opentrons_flex_96_tiprack_50ul
+    A2: opentrons_flex_96_tiprack_50ul
+    B1: opentrons_flex_96_tiprack_50ul
+    B2: opentrons_flex_96_tiprack_50ul
+    C1: opentrons_flex_96_tiprack_50ul
+    C3: opentrons_flex_96_tiprack_50ul
+    A3: trash_bin
+    # 6 tip racks = 576 tips; covers full 96-well plate with up to 4 add-ins
+
+  media_matrix_v2:
+    api_level: "2.24"
+    D1: opentrons_flex_96_tiprack_50ul
+    D2: source_plate                  # runtime param: plate_type
+    C1: opentrons_flex_96_tiprack_50ul
+    C2: dest_plate                    # fixed: thomsoninstrumentcompany_96_wellplate_2000ul
+    C3: water_reservoir               # fixed: usascientific_12_reservoir_22ml (water in well A12)
+    B1: opentrons_flex_96_tiprack_50ul
+    A1: opentrons_flex_96_tiprack_50ul
+    A3: trash_bin
+    # 4 tip racks = 384 tips; sufficient for most CSV-driven cherry-picking runs
+
+# ── Custom Labware Used Across Flex Protocols ─────────────────────────────────
+# These load names appear in protocol code — definitions must be uploaded to the Opentrons App
+
+custom_labware:
+  - load_name: brand_pcr_cooler_96
+    description: Brand PCR cooler 96-well block
+    used_by: [PCR_Prep_FLEX, PCR_LrgPrep_FLEX, IVTT_OAID_V3]
+  - load_name: axygen_96_wellplate_500ul
+    description: Axygen 96-well plate 500 µL
+    used_by: [PCR_Prep_FLEX, PCR_LrgPrep_FLEX, IVTT_OAID_V3]
+  - load_name: integra_reservoir_150ml
+    description: Integra 150 mL single-well reservoir
+    used_by: [PCR_Prep_FLEX, PCR_LrgPrep_FLEX, IVTT_OAID_V3]
+  - load_name: integra_reservoir_300ml
+    description: Integra 300 mL single-well reservoir
+    used_by: [PCR_Prep_FLEX, PCR_LrgPrep_FLEX, IVTT_OAID_V3]
+  - load_name: isofreeze_24_tuberack
+    description: IsoFreeze 24-position 1.5 mL tube rack
+    used_by: [PCR_LrgPrep_FLEX]
+  - load_name: thomsoninstrumentcompany_96_wellplate_2000ul
+    description: Thomson 96-well plate 2000 µL
+    used_by: [IVTT_OAID_V3, MediaMatrixV2]
+  - load_name: usascientific_12_reservoir_22ml
+    description: USA Scientific 12-well reservoir 22 mL
+    used_by: [MediaMatrixV2]
